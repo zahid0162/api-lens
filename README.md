@@ -1,11 +1,142 @@
-<div align="center">
+# API Lens — In-App HTTP Debugging Library for Android
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+**API Lens** is an open-source, embeddable Android library built with **Kotlin, Jetpack Compose, Material 3, Room, and OkHttp**. It provides a real-time in-app API debugging dashboard and draggable floating counter overlay for inspecting HTTP requests, responses, headers, JSON trees, errors, and socket timings directly inside your debug builds—with zero `SYSTEM_ALERT_WINDOW` permissions and a zero-footprint `api-lens-noop` artifact for release builds.
 
-  <h1>Built with AI Studio</h2>
+---
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Key Features
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+- **OkHttp & Retrofit Ready**: Works seamlessly with single or multiple Retrofit services and direct `OkHttpClient` instances.
+- **Safe Non-Consuming Capture**: Uses bounded `response.peekBody(...)` and non-mutating request sink forwarding so host streams, large payloads, and one-shot/duplex bodies are never corrupted.
+- **Detailed Network Timing (`EventListener`)**: Captures DNS lookup, TCP connect, TLS handshake, request transfer, server TTFB, and response download durations—explicitly distinguishing `Unavailable` phases (pooled connections or missing `EventListener`) from `0 ms`.
+- **Interactive Compose Dashboard**:
+  - Live KPI strip (Total, Success, Failed, Avg Latency) via `StateFlow`.
+  - Filter by All / Success / Failed / Slow / HTTP Method, search URLs/paths/statuses, and sort by Latest / Oldest / Slowest / Fastest.
+  - Adaptive List-Detail layout on tablets/foldables and edge-to-edge phone navigation.
+- **Deep Request Inspection**:
+  - **Overview**: Full URL, status, error classification (`SocketTimeout`, `UnknownHost`, `SSL`, etc.), timestamps, sizes, protocol, remote address.
+  - **Request**: Query params, headers, form-urlencoded key/values, formatted/raw body.
+  - **Response**: Headers, collapsible **JSON Tree**, syntax-highlighted **Pretty JSON**, **Raw**, in-body search with hit count, and Copy JSON / Copy Raw.
+  - **Timing**: Waterfall breakdown chart.
+- **Developer Tools**: Copy as `cURL`, Share trace, JSON history export, Slow API detection, Side-by-side Response Comparison, and Request Replay with security warning.
+- **Security First**: Automatic redaction of `Authorization`, `Cookie`, `Set-Cookie`, custom headers, sensitive query params, and nested JSON keys (`password`, `token`, `accessToken`, `secret`, etc.) before persistence. All data stays 100% local.
+- **Zero-Permission Floating Overlay**: Lifecycle-aware `WRAP_CONTENT` `ComposeView` attached across multiple Activities without `SYSTEM_ALERT_WINDOW` or Activity memory leaks.
 
-</div>
+---
+
+## Gradle Integration (JitPack)
+
+### 1. Add JitPack repository
+
+In `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+### 2. Add Debug & Release Dependencies
+
+Always use `debugImplementation` for `api-lens` and `releaseImplementation` for `api-lens-noop` so release APKs contain zero debugging UI, storage, or inspection code:
+
+```kotlin
+dependencies {
+    debugImplementation("com.github.apilens:api-lens:1.0.0")
+    releaseImplementation("com.github.apilens:api-lens-noop:1.0.0")
+}
+```
+
+---
+
+## Quick Start
+
+### 1. Initialize in `Application.onCreate()` (Kotlin)
+
+```kotlin
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        ApiLens.initialize(
+            context = applicationContext,
+            config = ApiLensConfig(
+                showFloatingButton = true,
+                floatingButtonPosition = FloatingButtonPosition.BOTTOM_END,
+                maxRequests = 500,
+                enableDatabase = true,
+                enableBodyInspection = true,
+                slowRequestThresholdMs = 1000L,
+                theme = ApiLensTheme.DARK
+            )
+        )
+    }
+}
+```
+
+### 2. Attach to OkHttp & Retrofit (Kotlin)
+
+```kotlin
+// Recommended: attaches both Interceptor and EventListener for full timing waterfall
+val okHttpClient = OkHttpClient.Builder()
+    .attachApiLens()
+    .build()
+
+// Or manually:
+val okHttpClientManual = OkHttpClient.Builder()
+    .addInterceptor(ApiLens.interceptor())
+    .eventListenerFactory(ApiLens.eventListenerFactory())
+    .build()
+
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://api.example.com/")
+    .client(okHttpClient)
+    .addConverterFactory(MoshiConverterFactory.create())
+    .build()
+```
+
+### 3. Java Integration Example
+
+```java
+public class MyJavaApp extends Application {
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ApiLensConfig config = new ApiLensConfig.Builder()
+                .showFloatingButton(true)
+                .maxRequests(500)
+                .enableDatabase(true)
+                .enableBodyInspection(true)
+                .theme(ApiLensTheme.DARK)
+                .build();
+
+        ApiLens.initialize(getApplicationContext(), config);
+    }
+
+    public OkHttpClient createClient() {
+        return ApiLens.configure(new OkHttpClient.Builder()).build();
+    }
+}
+```
+
+### 4. Runtime Controls
+
+```kotlin
+ApiLens.showDashboard(activity) // Open dashboard programmatically
+ApiLens.clearHistory()          // Clear stored traces
+ApiLens.disable()               // Pause interception & hide overlay
+ApiLens.enable()                // Resume interception & overlay
+```
+
+---
+
+## Project Modules
+
+| Module | Purpose |
+| --- | --- |
+| `:api-lens` | Full debug library (OkHttp Interceptor + EventListener, Room DB, Compose Dashboard, Details, Overlay, Redactor) |
+| `:api-lens-noop` | Release no-op library with identical public API and zero UI/Room/inspection overhead |
+| `:app` | Interactive sample application with multiple Retrofit services, embedded loopback test server, error scenarios, and multi-Activity overlay demo |

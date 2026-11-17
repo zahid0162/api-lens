@@ -1,0 +1,6 @@
+{
+  "name": "API Lens",
+  "description": "In-app HTTP API debugging library and interactive showcase for Android using OkHttp, Room, and Jetpack Compose.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

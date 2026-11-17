@@ -1,0 +1,2 @@
+-keep class com.apilens.** { *; }
+-dontwarn com.apilens.**

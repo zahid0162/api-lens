@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="api_lens_name">API Lens</string>
+    <string name="api_lens_overlay_cd">Open API Lens debugger</string>
+    <string name="api_lens_close_cd">Close API Lens</string>
+</resources>
