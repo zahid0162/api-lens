@@ -36,9 +36,13 @@ afterEvaluate {
     publications {
       create<MavenPublication>("release") {
         from(components["release"])
-        groupId = "com.github.apilens"
+        groupId = (project.findProperty("group")?.toString()?.takeIf { it.isNotBlank() }
+          ?: System.getenv("GROUP")?.takeIf { it.isNotBlank() }
+          ?: "com.github.apilens")
         artifactId = "api-lens-noop"
-        version = "1.0.0"
+        version = (project.findProperty("version")?.toString()?.takeIf { it.isNotBlank() && it != "unspecified" }
+          ?: System.getenv("VERSION")?.takeIf { it.isNotBlank() }
+          ?: "1.0.0")
       }
     }
   }
