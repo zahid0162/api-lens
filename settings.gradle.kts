@@ -22,7 +22,7 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "API Lens"
+rootProject.name = "ApiLens"
 
 include(":app")
 include(":api-lens")

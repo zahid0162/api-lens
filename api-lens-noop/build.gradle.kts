@@ -32,17 +32,27 @@ android {
 }
 
 afterEvaluate {
+  val mavenIdRegex = Regex("^[A-Za-z0-9_.\\-]+$")
+  val envGroup = System.getenv("GROUP")?.trim()?.takeIf { it.matches(mavenIdRegex) }
+  val envArtifact = System.getenv("ARTIFACT")?.trim()?.takeIf { it.matches(mavenIdRegex) }
+  val propGroup = project.findProperty("mavenGroup")?.toString()?.trim()?.takeIf { it.matches(mavenIdRegex) }
+  val resolvedGroup = propGroup ?: when {
+    envGroup != null && envArtifact != null -> "$envGroup.$envArtifact"
+    envGroup != null -> envGroup
+    else -> "com.github.apilens"
+  }
+  val resolvedVersion = (project.findProperty("mavenVersion")?.toString()?.trim()
+    ?: System.getenv("VERSION")?.trim())
+    ?.takeIf { it.matches(Regex("^[A-Za-z0-9_.\\-+]+$")) && it != "unspecified" }
+    ?: "1.0.0"
+
   publishing {
     publications {
       create<MavenPublication>("release") {
         from(components["release"])
-        groupId = (project.findProperty("group")?.toString()?.takeIf { it.isNotBlank() }
-          ?: System.getenv("GROUP")?.takeIf { it.isNotBlank() }
-          ?: "com.github.apilens")
+        groupId = resolvedGroup
         artifactId = "api-lens-noop"
-        version = (project.findProperty("version")?.toString()?.takeIf { it.isNotBlank() && it != "unspecified" }
-          ?: System.getenv("VERSION")?.takeIf { it.isNotBlank() }
-          ?: "1.0.0")
+        version = resolvedVersion
       }
     }
   }
