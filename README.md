@@ -48,8 +48,8 @@ Always use `debugImplementation` for `api-lens` and `releaseImplementation` for 
 
 ```kotlin
 dependencies {
-    debugImplementation("com.github.apilens:api-lens:1.0.0")
-    releaseImplementation("com.github.apilens:api-lens-noop:1.0.0")
+    debugImplementation("com.github.zahid0162.api-lens:api-lens:v1.0.3")
+    releaseImplementation("com.github.zahid0162.api-lens:api-lens-noop:v1.0.3")
 }
 ```
 
