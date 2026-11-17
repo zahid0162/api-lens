@@ -2,12 +2,16 @@ jdk:
   - openjdk21
 before_install:
   - yes | sdkmanager --licenses >/dev/null 2>&1 || true
-  - sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+  - sdkmanager "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0" || true
 install:
   - |
-    GRADLE_CMD="gradle"
+    set -e
     if [ -f "./gradlew" ]; then
       chmod +x ./gradlew
       GRADLE_CMD="./gradlew"
+    else
+      curl -fsSL https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -o /tmp/gradle-9.3.1.zip
+      unzip -q -o /tmp/gradle-9.3.1.zip -d /tmp
+      GRADLE_CMD="/tmp/gradle-9.3.1/bin/gradle"
     fi
-    $GRADLE_CMD :api-lens:publishToMavenLocal :api-lens-noop:publishToMavenLocal -x test --no-daemon
+    "$GRADLE_CMD" :api-lens:publishToMavenLocal :api-lens-noop:publishToMavenLocal -x test --no-daemon
