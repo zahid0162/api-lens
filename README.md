@@ -4,6 +4,18 @@
 
 **API Lens** is an open-source, embeddable Android library built with **Kotlin, Jetpack Compose, Material 3, Room, and OkHttp**. It provides a real-time in-app API debugging dashboard and draggable floating counter overlay for inspecting HTTP requests, responses, headers, JSON trees, errors, and socket timings directly inside your debug builds—with zero `SYSTEM_ALERT_WINDOW` permissions and a zero-footprint `api-lens-noop` artifact for release builds.
 
+## Application Preview
+
+![Desktop Preview](https://github.com/user-attachments/assets/3b3d688d-139b-4001-a9c3-562a6f9add41)
+
+### Mobile Screenshots
+
+![Screenshot 1](https://github.com/user-attachments/assets/c4bfa152-8020-47aa-949b-05cd4a462b58)
+
+![Screenshot 2](https://github.com/user-attachments/assets/6a7bdbcc-9196-4a17-b6ab-348e8ced6bac)
+
+![Screenshot 3](https://github.com/user-attachments/assets/3d856ff9-c31c-464b-a7c2-97b40a6f34ac)
+
 ---
 
 ## Key Features
