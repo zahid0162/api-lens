@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Radar
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -122,6 +123,7 @@ class MainActivity : ComponentActivity() {
                                     baseUrl = state.serverBaseUrl,
                                     isLoading = state.isLoading,
                                     onOpenDashboard = { ApiLens.showDashboard(this@MainActivity) },
+                                    onOpenPerfInspector = { ApiLens.showPerformanceInspector(this@MainActivity) },
                                     onRunSuite = { viewModel.runBurstSuite() },
                                     onClearHistory = { ApiLens.clearHistory() },
                                     onOpenSecondActivity = {
@@ -130,6 +132,23 @@ class MainActivity : ComponentActivity() {
                                 )
 
                                 LastOutcomeCard(state = state)
+
+                                EndpointGroupCard(
+                                    title = "Performance Inspector Stress Tools",
+                                    subtitle = "Populate P50/P90/P95 latency percentiles or simulate a main-thread frame hitch"
+                                ) {
+                                    EndpointActionRow(
+                                        label = "Run Mixed Latency Benchmark (5 Calls)",
+                                        testTag = "btn_perf_benchmark",
+                                        onClick = { viewModel.runLatencyBenchmark() }
+                                    )
+                                    EndpointActionRow(
+                                        label = "Simulate 120ms UI Frame Hitch (Choreographer Jank)",
+                                        testTag = "btn_simulate_jank",
+                                        isErrorAction = true,
+                                        onClick = { Thread.sleep(120L) }
+                                    )
+                                }
 
                                 EndpointGroupCard(
                                     title = "Success & Redaction Scenarios",
@@ -218,6 +237,7 @@ private fun HeroControlCard(
     baseUrl: String,
     isLoading: Boolean,
     onOpenDashboard: () -> Unit,
+    onOpenPerfInspector: () -> Unit,
     onRunSuite: () -> Unit,
     onClearHistory: () -> Unit,
     onOpenSecondActivity: () -> Unit
@@ -262,17 +282,21 @@ private fun HeroControlCard(
                 ) {
                     Icon(Icons.Rounded.BugReport, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Open Inspector")
+                    Text("Traffic")
                 }
-                FilledTonalButton(
-                    onClick = onRunSuite,
+                Button(
+                    onClick = onOpenPerfInspector,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = Color.White
+                    ),
                     modifier = Modifier
                         .weight(1f)
-                        .testTag("btn_run_suite")
+                        .testTag("btn_open_perf_inspector")
                 ) {
-                    Icon(Icons.Rounded.Bolt, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Rounded.Speed, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Run 4 Calls")
+                    Text("Perf Inspector")
                 }
             }
 
@@ -280,6 +304,16 @@ private fun HeroControlCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                FilledTonalButton(
+                    onClick = onRunSuite,
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("btn_run_suite")
+                ) {
+                    Icon(Icons.Rounded.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Run 4 Calls")
+                }
                 OutlinedButton(
                     onClick = onOpenSecondActivity,
                     modifier = Modifier
@@ -290,15 +324,21 @@ private fun HeroControlCard(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("2nd Activity")
                 }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 OutlinedButton(
                     onClick = onClearHistory,
                     modifier = Modifier
-                        .weight(1f)
+                        .fillMaxWidth()
                         .testTag("btn_clear_sample_history")
                 ) {
                     Icon(Icons.Rounded.DeleteOutline, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Clear Logs")
+                    Text("Clear Captured Logs")
                 }
             }
         }

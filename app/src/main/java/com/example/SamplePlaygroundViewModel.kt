@@ -112,6 +112,16 @@ class SamplePlaygroundViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
+    fun runLatencyBenchmark() {
+        viewModelScope.launch {
+            fetchProducts()
+            updateProfile()
+            patchPreferences()
+            fetchSlowAnalytics()
+            fetchCustomersUnauthorized()
+        }
+    }
+
     private fun executeCall(title: String, block: suspend () -> String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(

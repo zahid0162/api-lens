@@ -7,6 +7,7 @@ import android.content.Intent
 import com.apilens.core.ApiEventListener
 import com.apilens.core.ApiInterceptor
 import com.apilens.data.ApiRepository
+import com.apilens.performance.PerformanceTracker
 import com.apilens.presentation.dashboard.ApiLensDashboardActivity
 import com.apilens.presentation.overlay.DebugOverlayManager
 import kotlinx.coroutines.CoroutineScope
@@ -103,6 +104,7 @@ object ApiLens {
         if (context is Activity) {
             overlayManager.tryAttachToCurrentActivity(context)
         }
+        PerformanceTracker.initialize(applicationContext, config.enablePerformanceInspector)
     }
 
     @JvmStatic
@@ -124,8 +126,18 @@ object ApiLens {
 
     @JvmStatic
     fun showDashboard(context: Context) {
+        launchDashboard(context, ApiLensDashboardActivity.SECTION_TRAFFIC)
+    }
+
+    @JvmStatic
+    fun showPerformanceInspector(context: Context) {
+        launchDashboard(context, ApiLensDashboardActivity.SECTION_PERFORMANCE)
+    }
+
+    private fun launchDashboard(context: Context, initialSection: String) {
         val targetContext = appContext ?: context.applicationContext
         val intent = Intent(targetContext, ApiLensDashboardActivity::class.java).apply {
+            putExtra(ApiLensDashboardActivity.EXTRA_INITIAL_SECTION, initialSection)
             if (context !is Activity) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -145,11 +157,13 @@ object ApiLens {
     @JvmStatic
     fun disable() {
         enabledState.value = false
+        PerformanceTracker.setEnabled(false)
     }
 
     @JvmStatic
     fun enable() {
         enabledState.value = true
+        PerformanceTracker.setEnabled(configState.value.enablePerformanceInspector)
     }
 
     @JvmStatic
@@ -159,6 +173,7 @@ object ApiLens {
     fun updateConfig(config: ApiLensConfig) {
         configState.value = config
         repository?.updateConfig(config)
+        PerformanceTracker.setEnabled(enabledState.value && config.enablePerformanceInspector)
     }
 
     internal fun configFlow(): StateFlow<ApiLensConfig> = configState.asStateFlow()

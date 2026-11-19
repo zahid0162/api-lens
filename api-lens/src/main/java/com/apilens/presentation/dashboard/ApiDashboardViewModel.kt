@@ -42,6 +42,11 @@ data class DashboardMetrics(
     val averageResponseMs: Long = 0L
 )
 
+enum class DashboardSection(val label: String) {
+    TRAFFIC("Traffic"),
+    PERFORMANCE("Performance")
+}
+
 data class ApiDashboardUiState(
     val allTransactions: List<ApiTransaction> = emptyList(),
     val filteredTransactions: List<ApiTransaction> = emptyList(),
@@ -51,6 +56,7 @@ data class ApiDashboardUiState(
     val selectedSort: ApiSortOrder = ApiSortOrder.LATEST,
     val selectedTransactionId: String? = null,
     val compareIds: List<String> = emptyList(),
+    val activeSection: DashboardSection = DashboardSection.TRAFFIC,
     val config: ApiLensConfig = ApiLensConfig()
 )
 
@@ -65,13 +71,15 @@ class ApiDashboardViewModel(
     private val selectedSort = MutableStateFlow(ApiSortOrder.LATEST)
     private val selectedTransactionId = MutableStateFlow<String?>(null)
     private val compareIds = MutableStateFlow<List<String>>(emptyList())
+    private val activeSection = MutableStateFlow(DashboardSection.TRAFFIC)
 
     private data class Controls(
         val query: String,
         val filter: ApiFilter,
         val sort: ApiSortOrder,
         val selectedId: String?,
-        val compareIds: List<String>
+        val compareIds: List<String>,
+        val section: DashboardSection
     )
 
     private val controlsFlow = combine(
@@ -79,9 +87,18 @@ class ApiDashboardViewModel(
         selectedFilter,
         selectedSort,
         selectedTransactionId,
-        compareIds
-    ) { query, filter, sort, selectedId, cmpIds ->
-        Controls(query, filter, sort, selectedId, cmpIds)
+        compareIds,
+        activeSection
+    ) { values ->
+        @Suppress("UNCHECKED_CAST")
+        Controls(
+            query = values[0] as String,
+            filter = values[1] as ApiFilter,
+            sort = values[2] as ApiSortOrder,
+            selectedId = values[3] as String?,
+            compareIds = values[4] as List<String>,
+            section = values[5] as DashboardSection
+        )
     }
 
     val uiState: StateFlow<ApiDashboardUiState> = combine(
@@ -117,6 +134,7 @@ class ApiDashboardViewModel(
             selectedSort = controls.sort,
             selectedTransactionId = controls.selectedId,
             compareIds = controls.compareIds,
+            activeSection = controls.section,
             config = config
         )
     }.stateIn(
@@ -164,6 +182,16 @@ class ApiDashboardViewModel(
         repository.clearAllAsync()
     }
 
+    fun setActiveSection(section: DashboardSection) {
+        activeSection.value = section
+    }
+
+    fun inspectEndpointTraffic(endpointPath: String) {
+        searchQuery.value = endpointPath
+        selectedFilter.value = ApiFilter.ALL
+        activeSection.value = DashboardSection.TRAFFIC
+    }
+
     fun setTheme(theme: ApiLensTheme) {
         onUpdateConfig(configFlow.value.copy(theme = theme))
     }
@@ -174,6 +202,10 @@ class ApiDashboardViewModel(
 
     fun setBodyInspectionEnabled(enabled: Boolean) {
         onUpdateConfig(configFlow.value.copy(enableBodyInspection = enabled))
+    }
+
+    fun setPerformanceInspectorEnabled(enabled: Boolean) {
+        onUpdateConfig(configFlow.value.copy(enablePerformanceInspector = enabled))
     }
 
     fun setSlowThresholdMs(thresholdMs: Long) {

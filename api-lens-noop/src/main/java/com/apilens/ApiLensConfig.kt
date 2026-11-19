@@ -30,6 +30,7 @@ data class ApiLensConfig @JvmOverloads constructor(
     val maxRequests: Int = DEFAULT_MAX_REQUESTS,
     val enableDatabase: Boolean = true,
     val enableBodyInspection: Boolean = true,
+    val enablePerformanceInspector: Boolean = true,
     val maxBodySizeBytes: Long = DEFAULT_MAX_BODY_SIZE_BYTES,
     val slowRequestThresholdMs: Long = DEFAULT_SLOW_THRESHOLD_MS,
     val redactedHeaders: Set<String> = DEFAULT_REDACTED_HEADERS,
@@ -47,6 +48,9 @@ data class ApiLensConfig @JvmOverloads constructor(
         fun maxRequests(maxRequests: Int) = apply { config = config.copy(maxRequests = maxRequests) }
         fun enableDatabase(enable: Boolean) = apply { config = config.copy(enableDatabase = enable) }
         fun enableBodyInspection(enable: Boolean) = apply { config = config.copy(enableBodyInspection = enable) }
+        fun enablePerformanceInspector(enable: Boolean) = apply {
+            config = config.copy(enablePerformanceInspector = enable)
+        }
         fun maxBodySizeBytes(maxBytes: Long) = apply { config = config.copy(maxBodySizeBytes = maxBytes) }
         fun slowRequestThresholdMs(thresholdMs: Long) = apply {
             config = config.copy(slowRequestThresholdMs = thresholdMs)

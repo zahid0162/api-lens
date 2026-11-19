@@ -43,6 +43,11 @@ object ApiLens {
     }
 
     @JvmStatic
+    fun showPerformanceInspector(context: Context) {
+        // No-op in release builds
+    }
+
+    @JvmStatic
     fun clearHistory() {
         // No-op in release builds
     }

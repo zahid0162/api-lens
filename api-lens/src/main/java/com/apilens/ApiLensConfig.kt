@@ -33,6 +33,7 @@ data class ApiLensConfig @JvmOverloads constructor(
     val maxRequests: Int = DEFAULT_MAX_REQUESTS,
     val enableDatabase: Boolean = true,
     val enableBodyInspection: Boolean = true,
+    val enablePerformanceInspector: Boolean = true,
     val maxBodySizeBytes: Long = DEFAULT_MAX_BODY_SIZE_BYTES,
     val slowRequestThresholdMs: Long = DEFAULT_SLOW_THRESHOLD_MS,
     val redactedHeaders: Set<String> = DEFAULT_REDACTED_HEADERS,
@@ -55,6 +56,7 @@ data class ApiLensConfig @JvmOverloads constructor(
         private var maxRequests: Int = DEFAULT_MAX_REQUESTS
         private var enableDatabase: Boolean = true
         private var enableBodyInspection: Boolean = true
+        private var enablePerformanceInspector: Boolean = true
         private var maxBodySizeBytes: Long = DEFAULT_MAX_BODY_SIZE_BYTES
         private var slowRequestThresholdMs: Long = DEFAULT_SLOW_THRESHOLD_MS
         private var redactedHeaders: Set<String> = DEFAULT_REDACTED_HEADERS
@@ -69,6 +71,9 @@ data class ApiLensConfig @JvmOverloads constructor(
         fun maxRequests(maxRequests: Int) = apply { this.maxRequests = maxRequests }
         fun enableDatabase(enable: Boolean) = apply { this.enableDatabase = enable }
         fun enableBodyInspection(enable: Boolean) = apply { this.enableBodyInspection = enable }
+        fun enablePerformanceInspector(enable: Boolean) = apply {
+            this.enablePerformanceInspector = enable
+        }
         fun maxBodySizeBytes(maxBytes: Long) = apply { this.maxBodySizeBytes = maxBytes }
         fun slowRequestThresholdMs(thresholdMs: Long) = apply {
             this.slowRequestThresholdMs = thresholdMs
@@ -84,6 +89,7 @@ data class ApiLensConfig @JvmOverloads constructor(
             maxRequests = maxRequests,
             enableDatabase = enableDatabase,
             enableBodyInspection = enableBodyInspection,
+            enablePerformanceInspector = enablePerformanceInspector,
             maxBodySizeBytes = maxBodySizeBytes,
             slowRequestThresholdMs = slowRequestThresholdMs,
             redactedHeaders = redactedHeaders,

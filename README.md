@@ -20,6 +20,7 @@
   - **Request**: Query params, headers, form-urlencoded key/values, formatted/raw body.
   - **Response**: Headers, collapsible **JSON Tree**, syntax-highlighted **Pretty JSON**, **Raw**, in-body search with hit count, and Copy JSON / Copy Raw.
   - **Timing**: Waterfall breakdown chart.
+- **Performance Inspector**: Live app UI **FPS & Frame Jank** monitor (`Choreographer`), **JVM / Native Heap & Thread** telemetry with manual GC trigger, **P50/P90/P95 Latency Percentiles**, SLA bar chart, and tappable **Endpoint Bottleneck Leaderboard**.
 - **Developer Tools**: Copy as `cURL`, Share trace, JSON history export, Slow API detection, Side-by-side Response Comparison, and Request Replay with security warning.
 - **Security First**: Automatic redaction of `Authorization`, `Cookie`, `Set-Cookie`, custom headers, sensitive query params, and nested JSON keys (`password`, `token`, `accessToken`, `secret`, etc.) before persistence. All data stays 100% local.
 - **Zero-Permission Floating Overlay**: Lifecycle-aware `WRAP_CONTENT` `ComposeView` attached across multiple Activities without `SYSTEM_ALERT_WINDOW` or Activity memory leaks.
@@ -71,6 +72,7 @@ class MyApp : Application() {
                 maxRequests = 500,
                 enableDatabase = true,
                 enableBodyInspection = true,
+                enablePerformanceInspector = true,
                 slowRequestThresholdMs = 1000L,
                 theme = ApiLensTheme.DARK
             )
@@ -127,10 +129,11 @@ public class MyJavaApp extends Application {
 ### 4. Runtime Controls
 
 ```kotlin
-ApiLens.showDashboard(activity) // Open dashboard programmatically
-ApiLens.clearHistory()          // Clear stored traces
-ApiLens.disable()               // Pause interception & hide overlay
-ApiLens.enable()                // Resume interception & overlay
+ApiLens.showDashboard(activity)             // Open Traffic dashboard programmatically
+ApiLens.showPerformanceInspector(activity)  // Open Performance Inspector directly
+ApiLens.clearHistory()                      // Clear stored traces
+ApiLens.disable()                           // Pause interception, perf tracking & overlay
+ApiLens.enable()                            // Resume interception, perf tracking & overlay
 ```
 
 ---

@@ -8,6 +8,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -40,6 +42,7 @@ import androidx.compose.material.icons.rounded.Radar
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,7 +67,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,6 +92,7 @@ import com.apilens.presentation.components.FilterAndSortBar
 import com.apilens.presentation.components.RequestCard
 import com.apilens.presentation.details.ApiDetailsScreen
 import com.apilens.presentation.details.ResponseComparisonSheet
+import com.apilens.presentation.performance.PerformanceInspectorScreen
 import com.apilens.presentation.theme.JetBrainsMonoFontFamily
 import com.apilens.presentation.theme.LocalApiLensColors
 import kotlinx.coroutines.launch
@@ -95,8 +101,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun ApiDashboardScreen(
     onCloseDashboard: () -> Unit,
+    initialSection: DashboardSection = DashboardSection.TRAFFIC,
     vm: ApiDashboardViewModel = viewModel(factory = ApiDashboardViewModel.Factory())
 ) {
+    LaunchedEffect(initialSection) {
+        vm.setActiveSection(initialSection)
+    }
+
     val state by vm.uiState.collectAsStateWithLifecycle()
     val colors = LocalApiLensColors.current
     val context = LocalContext.current
@@ -146,7 +157,7 @@ fun ApiDashboardScreen(
         val isWideLayout = maxWidth >= 720.dp
         val selectedTxId = state.selectedTransactionId
 
-        if (!isWideLayout && selectedTxId != null) {
+        if (!isWideLayout && selectedTxId != null && state.activeSection == DashboardSection.TRAFFIC) {
             BackHandler {
                 vm.selectTransaction(null)
             }
@@ -269,16 +280,45 @@ fun ApiDashboardScreen(
                     )
                 }
             ) { innerPadding ->
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
                 ) {
-                    Column(
+                    DashboardSectionSwitcher(
+                        activeSection = state.activeSection,
+                        onSelectSection = vm::setActiveSection,
                         modifier = Modifier
-                            .weight(if (isWideLayout) 0.48f else 1f)
-                            .fillMaxHeight()
-                    ) {
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+
+                    if (state.activeSection == DashboardSection.PERFORMANCE) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            PerformanceInspectorScreen(
+                                onEndpointClick = { endpointPath ->
+                                    vm.inspectEndpointTraffic(endpointPath)
+                                },
+                                onEnableInspector = {
+                                    vm.setPerformanceInspectorEnabled(true)
+                                },
+                                modifier = Modifier
+                                    .widthIn(max = 900.dp)
+                                    .fillMaxSize()
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(if (isWideLayout) 0.48f else 1f)
+                                    .fillMaxHeight()
+                            ) {
                         DashboardMetricsRow(
                             metrics = state.metrics,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -408,6 +448,8 @@ fun ApiDashboardScreen(
                             }
                         }
                     }
+                        }
+                    }
                 }
             }
         }
@@ -450,6 +492,7 @@ fun ApiDashboardScreen(
             onDismiss = { showSettingsSheet = false },
             onToggleFloatingButton = vm::setFloatingButtonVisible,
             onToggleBodyInspection = vm::setBodyInspectionEnabled,
+            onTogglePerformanceInspector = vm::setPerformanceInspectorEnabled,
             onThemeSelected = vm::setTheme,
             onSlowThresholdSelected = vm::setSlowThresholdMs
         )
@@ -639,6 +682,63 @@ private fun EmptyRequestsView(
     }
 }
 
+@Composable
+private fun DashboardSectionSwitcher(
+    activeSection: DashboardSection,
+    onSelectSection: (DashboardSection) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = LocalApiLensColors.current
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(colors.surfaceCard)
+            .border(1.dp, colors.borderSubtle, RoundedCornerShape(12.dp))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        DashboardSection.entries.forEach { section ->
+            val selected = section == activeSection
+            val icon = if (section == DashboardSection.TRAFFIC) {
+                Icons.Rounded.Http
+            } else {
+                Icons.Rounded.Speed
+            }
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .minimumInteractiveComponentSize()
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(if (selected) colors.accentCyan.copy(alpha = 0.16f) else Color.Transparent)
+                    .border(
+                        width = if (selected) 1.dp else 0.dp,
+                        color = if (selected) colors.accentCyan.copy(alpha = 0.5f) else Color.Transparent,
+                        shape = RoundedCornerShape(9.dp)
+                    )
+                    .clickable { onSelectSection(section) }
+                    .padding(vertical = 8.dp, horizontal = 12.dp)
+                    .testTag("section_tab_${section.name.lowercase()}"),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = section.label,
+                    tint = if (selected) colors.accentCyan else colors.textSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = section.label,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 13.sp,
+                    color = if (selected) colors.accentCyan else colors.textSecondary
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsBottomSheet(
@@ -646,6 +746,7 @@ private fun SettingsBottomSheet(
     onDismiss: () -> Unit,
     onToggleFloatingButton: (Boolean) -> Unit,
     onToggleBodyInspection: (Boolean) -> Unit,
+    onTogglePerformanceInspector: (Boolean) -> Unit,
     onThemeSelected: (ApiLensTheme) -> Unit,
     onSlowThresholdSelected: (Long) -> Unit
 ) {
@@ -701,6 +802,25 @@ private fun SettingsBottomSheet(
                 Switch(
                     checked = state.config.enableBodyInspection,
                     onCheckedChange = onToggleBodyInspection
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Performance Inspector", color = colors.textPrimary, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Track live UI FPS, frame jank, and JVM/native memory",
+                        color = colors.textSecondary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Switch(
+                    checked = state.config.enablePerformanceInspector,
+                    onCheckedChange = onTogglePerformanceInspector
                 )
             }
 
