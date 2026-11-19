@@ -1,5 +1,7 @@
 [![](https://jitpack.io/v/zahid0162/api-lens.svg)](https://jitpack.io/#zahid0162/api-lens)
 
+[![](https://jitpack.io/v/zahid0162/api-lens.svg)](https://jitpack.io/#zahid0162/api-lens)
+
 # API Lens — In-App HTTP Debugging Library for Android
 
 **API Lens** is an open-source, embeddable Android library built with **Kotlin, Jetpack Compose, Material 3, Room, and OkHttp**. It provides a real-time in-app API debugging dashboard and draggable floating counter overlay for inspecting HTTP requests, responses, headers, JSON trees, errors, and socket timings directly inside your debug builds—with zero `SYSTEM_ALERT_WINDOW` permissions and a zero-footprint `api-lens-noop` artifact for release builds.
