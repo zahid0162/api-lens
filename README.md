@@ -10,11 +10,16 @@
 
 ### Mobile Screenshots
 
-![Screenshot 1](https://github.com/user-attachments/assets/c4bfa152-8020-47aa-949b-05cd4a462b58)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c4bfa152-8020-47aa-949b-05cd4a462b58"
+       width="24%" alt="Mobile Screenshot 1"/>
 
-![Screenshot 2](https://github.com/user-attachments/assets/6a7bdbcc-9196-4a17-b6ab-348e8ced6bac)
+  <img src="https://github.com/user-attachments/assets/6a7bdbcc-9196-4a17-b6ab-348e8ced6bac"
+       width="24%" alt="Mobile Screenshot 2"/>
 
-![Screenshot 3](https://github.com/user-attachments/assets/3d856ff9-c31c-464b-a7c2-97b40a6f34ac)
+  <img src="https://github.com/user-attachments/assets/3d856ff9-c31c-464b-a7c2-97b40a6f34ac"
+       width="24%" alt="Mobile Screenshot 3"/>
+</p>
 
 ---
 
